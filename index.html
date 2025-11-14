@@ -261,10 +261,10 @@
   // keyboard controls
   window.addEventListener('keydown', (e)=>{
     if(document.getElementById('startScreen').style.display !== 'none') return;
-    if(e.key==='W') tryMove(-1,0);
-    if(e.key==='D') tryMove(0,1);
-    if(e.key==='S') tryMove(1,0);
-    if(e.key==='A') tryMove(0,-1);
+    if(e.key==='ArrowUp') tryMove(-1,0);
+    if(e.key==='ArrowRight') tryMove(0,1);
+    if(e.key==='ArrowDown') tryMove(1,0);
+    if(e.key==='ArrowLeft') tryMove(0,-1);
     if(e.code==='Space'){ e.preventDefault(); isMuted=!isMuted; bgMusic.muted=isMuted; document.getElementById('muteBtn').innerText = isMuted?'Unmute':'Mute'; }
   });
 
