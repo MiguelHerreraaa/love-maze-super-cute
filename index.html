@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Love Maze 💕</title>
+  <style>
+    :root{--bg:#ffeef2;--accent:#ff8fb1;--soft:#fff7fa}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    body{background:linear-gradient(180deg,var(--bg),#fff);display:flex;align-items:center;justify-content:center}
+    .container{width:980px;max-width:96vw;margin:24px auto;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,0.85),rgba(255,248,250,0.9));box-shadow:0 10px 30px rgba(255,120,160,0.15);overflow:hidden}
+    header{padding:18px 28px;display:flex;align-items:center;gap:12px}
+    h1{margin:0;color:#b30046;letter-spacing:0.6px}
+    .main{display:flex;gap:0}
+    /* left: game area */
+    .game-wrap{flex:1;padding:18px;position:relative}
+    canvas{display:block;background:#fff;border-radius:12px;box-shadow:inset 0 2px 6px rgba(0,0,0,0.04)}
+    /* right: controls */
+    .side{width:320px;padding:20px;border-left:1px dashed rgba(200,120,160,0.12);background:linear-gradient(180deg,transparent,rgba(255,240,245,0.6));}
+    .start-screen{position:absolute;inset:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,240,245,0.6));backdrop-filter:blur(4px);border-radius:12px}
+    .title{font-size:28px;margin-bottom:6px}
+    .subtitle{color:#7a3750;margin-bottom:14px}
+    .btn{background:var(--accent);color:white;padding:10px 18px;border-radius:12px;border:none;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(255,120,160,0.18)}
+    .btn.ghost{background:transparent;color:#b30046;border:2px solid rgba(179,0,70,0.08);box-shadow:none}
+    .no-btn-wrap{position:relative}
+    .no-btn{position:relative}
+    /* footer message */
+    .message-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+    .popup{background:linear-gradient(180deg,#fff,#fff8fb);padding:20px;border-radius:14px;box-shadow:0 12px 40px rgba(179,0,70,0.18);text-align:center;pointer-events:auto}
+    .heart{position:absolute;right:18px;top:-10px;font-size:24px}
+    /* hearts background */
+    .hearts{position:absolute;inset:0;pointer-events:none;opacity:0.25}
+    .side h3{margin-top:0}
+    .instructions{color:#6b3143;font-size:14px}
+    /* responsive */
+    @media (max-width:880px){.main{flex-direction:column}.side{width:100%;border-left:none;border-top:1px dashed rgba(200,120,160,0.12)}}
+  </style>
+</head>
+<body>
+    <audio id="bgMusic" src="takeachance.mp3" autoplay loop></audio>
+  <div class="container">
+    <header>
+      <div style="width:52px;height:52px;background:linear-gradient(180deg,#fff,#ffdfee);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(255,130,160,0.12)">💘</div>
+      <div>
+        <h1>Love Maze</h1>
+        <div style="color:#a82e58;font-size:13px">A cute maze to help 2 persons find each other</div>
+      </div>
+      <div style="flex:1"></div>
+      <div style="font-size:13px;color:#b45174">Made with a little help ✨</div>
+    </header>
+
+    <div class="main">
+      <div class="game-wrap">
+        <div class="hearts" id="hearts"></div>
+        <canvas id="game" width="640" height="640"></canvas>
+
+        <div class="start-screen" id="startScreen">
+          <div class="title">Love Maze (very coquette HAHAHA) 💕</div>
+          <div class="subtitle">Play this little maze for me, pretty pleasee?</div>
+          <div class="subtitle">from: Migz Ryu Herrera (yes with my nickname and ign)</div>
+          <div style="display:flex;gap:12px">
+            <button class="btn" id="playBtn">Play the Game 💕</button>
+            <div class="no-btn-wrap">
+              <button class="btn ghost no-btn" id="noBtn">I Don't Want to Play 😢</button>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:13px;color:#7a3750">Tip: use arrow keys to move her.</div>
+        </div>
+
+        <div class="message-overlay" id="messageOverlay" style="display:none">
+          <div class="popup" id="winPopup">
+            <div style="font-size:22px;margin-bottom:8px">You found me! 💞</div>
+            <div style="color:#6b3143;margin-bottom:12px">aamin na ako grr, i like u, cla.</div>
+            <button class="btn" id="replayBtn">Play Again</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <h3>How it works</h3>
+        <p class="instructions">Use the arrow keys to guide the girl through the maze. Reach the boy at the finish to reveal a message and confetti! The "I Don't Want to Play" button has a playful mind of its own. try to click it if you can 😉(WAW ENGLISH???? AHHAAHAHA)</p>
+
+        <div style="margin-top:18px">
+          <strong>Controls</strong>
+          <ul>
+            <li>Arrow keys — move girl</li>
+            <li>Space — mute/unmute</li>
+          </ul>
+        </div>
+
+        <div style="margin-top:18px">
+          <strong>Background music</strong>
+          <div style="margin-top:8px">
+            <button class="btn" id="muteBtn">Mute</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+  // ========== cute inline SVG sprites (cartoonish) ==========
+  const girlSVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>
+    <defs>
+      <linearGradient id='g1' x1='0' x2='1'><stop offset='0' stop-color='%23fff0f4'/><stop offset='1' stop-color='%23ffd0e0'/></linearGradient>
+    </defs>
+    <rect width='120' height='120' rx='18' fill='none'/>
+    <circle cx='60' cy='36' r='20' fill='%23ffd2e6' stroke='%23f8a3c2' stroke-width='2'/>
+    <rect x='40' y='56' width='40' height='38' rx='8' fill='url(%23g1)' stroke='%23f4a1c3' stroke-width='2'/>
+    <ellipse cx='48' cy='34' rx='3' ry='2' fill='%23000'/>
+    <ellipse cx='72' cy='34' rx='3' ry='2' fill='%23000'/>
+    <path d='M52 44 q8 6 16 0' fill='none' stroke='%23000' stroke-linecap='round' stroke-width='2'/>
+    <path d='M35 62 q12 -6 25 0' fill='none' stroke='%23f06ea8' stroke-width='3' stroke-linecap='round'/>
+  </svg>`;
+
+  const boySVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>
+    <defs>
+      <linearGradient id='b1' x1='0' x2='1'><stop offset='0' stop-color='%23e8faff'/><stop offset='1' stop-color='%23d0efff'/></linearGradient>
+    </defs>
+    <circle cx='60' cy='36' r='20' fill='%23ffd9b3' stroke='%23f6c79a' stroke-width='2'/>
+    <rect x='38' y='56' width='44' height='36' rx='8' fill='url(%23b1)' stroke='%2397cfe6' stroke-width='2'/>
+    <ellipse cx='50' cy='34' rx='3' ry='2' fill='%23000'/>
+    <ellipse cx='70' cy='34' rx='3' ry='2' fill='%23000'/>
+    <path d='M48 44 q12 6 24 0' fill='none' stroke='%23000' stroke-linecap='round' stroke-width='2'/>
+    <path d='M38 70 q20 -8 44 0' fill='none' stroke='%2390c7e4' stroke-width='3' stroke-linecap='round'/>
+  </svg>`;
+
+  function svgToDataURL(svg){ return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg); }
+
+  // ========== canvas maze setup ==========
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const rows = 15, cols = 15, cellSize = canvas.width / cols;
+  let maze = [], player = {r:0,c:0}, finish = {r:rows-1,c:cols-1};
+
+  function initEmpty(){
+    maze = [];
+    for(let r=0;r<rows;r++){
+      const row = [];
+      for(let c=0;c<cols;c++) row.push({visited:false,walls:[true,true,true,true]});
+      maze.push(row);
+    }
+  }
+
+  function generateMaze(){
+    initEmpty();
+    const stack = [];
+    maze[0][0].visited=true; stack.push([0,0]);
+    while(stack.length){
+      const [r,c] = stack[stack.length-1];
+      const neigh=[];
+      if(r>0 && !maze[r-1][c].visited) neigh.push([r-1,c,0]);
+      if(c<cols-1 && !maze[r][c+1].visited) neigh.push([r,c+1,1]);
+      if(r<rows-1 && !maze[r+1][c].visited) neigh.push([r+1,c,2]);
+      if(c>0 && !maze[r][c-1].visited) neigh.push([r,c-1,3]);
+      if(neigh.length){
+        const n = neigh[Math.floor(Math.random()*neigh.length)];
+        const [nr,nc,dir] = n;
+        maze[r][c].walls[dir]=false;
+        maze[nr][nc].walls[(dir+2)%4]=false;
+        maze[nr][nc].visited=true;
+        stack.push([nr,nc]);
+      } else stack.pop();
+    }
+  }
+
+  function drawMaze(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#fff0f6'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.lineWidth=3; ctx.strokeStyle='#f6a9c7';
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const x=c*cellSize, y=r*cellSize, cell=maze[r][c];
+        if(cell.walls[0]){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+cellSize,y);ctx.stroke();}
+        if(cell.walls[1]){ctx.beginPath();ctx.moveTo(x+cellSize,y);ctx.lineTo(x+cellSize,y+cellSize);ctx.stroke();}
+        if(cell.walls[2]){ctx.beginPath();ctx.moveTo(x+cellSize,y+cellSize);ctx.lineTo(x,y+cellSize);ctx.stroke();}
+        if(cell.walls[3]){ctx.beginPath();ctx.moveTo(x,y+cellSize);ctx.lineTo(x,y);ctx.stroke();}
+      }
+    }
+  }
+
+  const girlImg = new Image(); girlImg.src = svgToDataURL(girlSVG);
+  const boyImg = new Image(); boyImg.src = svgToDataURL(boySVG);
+
+  function drawSprites(){
+    ctx.save();
+    ctx.translate(finish.c*cellSize + cellSize/2, finish.r*cellSize + cellSize/2);
+    ctx.drawImage(boyImg, -cellSize*0.33, -cellSize*0.33, cellSize*0.66, cellSize*0.66);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(player.c*cellSize + cellSize/2, player.r*cellSize + cellSize/2);
+    ctx.drawImage(girlImg, -cellSize*0.33, -cellSize*0.33, cellSize*0.66, cellSize*0.66);
+    ctx.restore();
+  }
+
+  function render(){ drawMaze(); drawSprites(); }
+
+  function tryMove(dr,dc){
+    const nr = player.r + dr, nc = player.c + dc;
+    if(nr<0||nr>=rows||nc<0||nc>=cols) return;
+    let dir = (dr===-1&&dc===0)?0:(dr===0&&dc===1)?1:(dr===1&&dc===0)?2:3;
+    if(!maze[player.r][player.c].walls[dir]){
+      player.r=nr; player.c=nc; render(); checkWin();
+    }
+  }
+
+  function checkWin(){
+    if(player.r===finish.r && player.c===finish.c){
+      document.getElementById('messageOverlay').style.display='flex';
+      startConfetti();
+      playWinTune();
+    }
+  }
+
+  // ========== simple confetti ==========
+  let confettiParticles=[], confettiTimer=null;
+  function startConfetti(){
+    confettiParticles=[]; 
+    for(let i=0;i<120;i++){
+      confettiParticles.push({x:canvas.width/2+(Math.random()-0.5)*200, y:canvas.height/2+(Math.random()-0.5)*80, vx:(Math.random()-0.5)*6, vy:(Math.random()*-6)-1, r:Math.random()*6+2, age:0, color:['#ffd1e6','#ffb0d0','#ffd9b3','#e1f5ff'][Math.floor(Math.random()*4)]});
+    }
+    if(confettiTimer) cancelAnimationFrame(confettiTimer);
+    (function frame(){
+      drawMaze(); drawSprites();
+      confettiParticles.forEach(p=>{
+        p.vy+=0.18; p.x+=p.vx; p.y+=p.vy; p.age++;
+        ctx.fillStyle=p.color; ctx.beginPath(); ctx.ellipse(p.x,p.y,p.r,p.r*0.6,0.2*Math.PI,0,2*Math.PI); ctx.fill();
+      });
+      confettiParticles = confettiParticles.filter(p=>p.y<canvas.height+40 && p.age<300);
+      if(confettiParticles.length) confettiTimer = requestAnimationFrame(frame);
+    })();
+  }
+
+  // ========== background music handling ==========
+  const bgMusic = document.getElementById('bgMusic');
+  let isMuted = false;
+
+  document.getElementById('playBtn').addEventListener('click', ()=>{
+    document.getElementById('startScreen').style.display='none';
+    bgMusic.volume = 1;
+    bgMusic.muted = isMuted;
+    bgMusic.play().catch(e=>console.log("Audio blocked:",e));
+    render();
+  });
+
+  document.getElementById('muteBtn').addEventListener('click', ()=>{
+    isMuted = !isMuted;
+    bgMusic.muted = isMuted;
+    document.getElementById('muteBtn').innerText = isMuted?'Unmute':'Mute';
+  });
+
+  // small win jingle
+  function playWinTune(){
+    const tctx = new (window.AudioContext || window.webkitAudioContext)();
+    const g = tctx.createGain(); g.connect(tctx.destination); g.gain.value=0.18;
+    const o = tctx.createOscillator(); o.type='sine'; o.frequency.value = 520;
+    o.connect(g); o.start(); g.gain.exponentialRampToValueAtTime(0.001, tctx.currentTime+1.2);
+    o.stop(tctx.currentTime+1.2);
+  }
+
+  // keyboard controls
+  window.addEventListener('keydown', (e)=>{
+    if(document.getElementById('startScreen').style.display !== 'none') return;
+    if(e.key==='ArrowUp') tryMove(-1,0);
+    if(e.key==='ArrowRight') tryMove(0,1);
+    if(e.key==='ArrowDown') tryMove(1,0);
+    if(e.key==='ArrowLeft') tryMove(0,-1);
+    if(e.code==='Space'){ e.preventDefault(); isMuted=!isMuted; bgMusic.muted=isMuted; document.getElementById('muteBtn').innerText = isMuted?'Unmute':'Mute'; }
+  });
+
+  // initial build
+  function resetGame(){ generateMaze(); player={r:0,c:0}; finish={r:rows-1,c:cols-1}; render(); }
+  resetGame();
+
+  // floating hearts background
+  const heartsBox = document.getElementById('hearts');
+  function spawnHeart(){
+    const el = document.createElement('div'); el.textContent='❤️';
+    el.style.position='absolute';
+    el.style.left = Math.random()*100 + '%';
+    el.style.top = '100px';
+    el.style.fontSize = (12+Math.random()*28)+'px';
+    el.style.opacity = 0.15 + Math.random()*0.5;
+    heartsBox.appendChild(el);
+    const dur = 4000 + Math.random()*6000;
+    const start = performance.now();
+    function animate(t){
+      const p=(t-start)/dur;
+      el.style.transform = `translateY(${-p*420}px) rotate(${p*50}deg)`;
+      if(p<1) requestAnimationFrame(animate); else el.remove();
+    }
+    requestAnimationFrame(animate);
+  }
+  setInterval(spawnHeart, 700);
+
+  // ensure images load then render
+  let loaded=0; [girlImg,boyImg].forEach(img=>img.onload=()=>{ loaded++; if(loaded===2) render(); });
+
+  // playful "I Don't Want to Play"
+  const noBtn = document.getElementById('noBtn');
+  const noWrap = document.querySelector('.no-btn-wrap');
+  noWrap.addEventListener('mousemove', (e)=>{
+    const rect=noBtn.getBoundingClientRect();
+    const dx=e.clientX-(rect.left+rect.width/2), dy=e.clientY-(rect.top+rect.height/2);
+    if(Math.sqrt(dx*dx+dy*dy)<130){
+      const w=noWrap.clientWidth-noBtn.clientWidth, h=noWrap.clientHeight-noBtn.clientHeight;
+      const nx=Math.max(0,Math.min(w,Math.random()*w)), ny=Math.max(0,Math.min(h,Math.random()*h));
+      noBtn.style.transform=`translate(${nx}px,${ny}px)`;
+    }
+  });
+  noBtn.addEventListener('click', ()=>alert("di pwedeeee :P laruin mo 'yan nag effort aq HAHAHAHA eme"));
+</script>
+
